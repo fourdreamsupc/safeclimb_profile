@@ -4,12 +4,14 @@ using Go2Climb.API.Agencies.Domain.Repositories;
 using Go2Climb.API.Agencies.Domain.Services;
 using Go2Climb.API.Agencies.Domain.Services.Communication;
 using Go2Climb.API.Resources;
+using Go2Climb.API.Security.Domain.Services.Communication;
+using Go2Climb.API.Security.Exceptions;
 using Go2Climb.API.Shared.Domain.Repositories;
 using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace Go2Climb.API.Agencies.Services
 {
-    public class AgencyService
+    public class AgencyService : IAgencyService
     {
         private readonly IAgencyRepository _agencyRepository;
         private readonly IUnitOfWork _unitOfWork;
@@ -39,6 +41,71 @@ namespace Go2Climb.API.Agencies.Services
             return agency;
         }
         
+        public async Task RegisterAsync(SaveAgencyResource request)
+        {
+            //Validate
+            if (_agencyRepository.ExistsByEmail(request.Email))
+                throw new AppException($"Email {request.Email} is already taken.");
+            
+            //Map request to customer
+            var customer = _mapper.Map<Agency>(request);
+            
+            //Hash Password
+            customer.PasswordHash = BCryptNet.HashPassword(request.Password);
+            
+            //Save customer
+            try
+            {
+                await _agencyRepository.AddAsync(customer);
+                await _unitOfWork.CompleteAsync();
+            }
+            catch (Exception e)
+            {
+                throw new AppException($"An error occurred while saving the agency: {e.Message}");
+            }
+        }
+
+        public async Task UpdateAsync(int id, UpdateAgencyRequest request)
+        {
+            var agency = GetById(id); 
+            
+            //Validate
+            if(_agencyRepository.ExistsByEmail(request.Email)) 
+                throw new AppException($"Email {request.Email} is already taken.");
+            
+            //Hash Password if entered
+            if (!string.IsNullOrEmpty(request.Password))
+                agency.PasswordHash = BCryptNet.HashPassword(request.Password);
+            
+            //Map request to Customer
+            _mapper.Map(request, agency);
+            
+            try
+            {
+                _agencyRepository.Update(agency);
+                await _unitOfWork.CompleteAsync();
+            }
+            catch (Exception e)
+            {
+                throw new AppException($"An error occurred while updating the agency: {e.Message}");
+            }
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var agency = GetById(id);
+
+            try
+            {
+                _agencyRepository.Remove(agency);
+                await _unitOfWork.CompleteAsync();
+            }
+            catch (Exception e)
+            {
+                throw new AppException($"An error occurred while deleting the agency: {e.Message}");
+            }
+        }
+
         public async Task<AgencyResponse> FindById(int id)
         {
             var existingAgency = await _agencyRepository.FindByIdAsync(id);
