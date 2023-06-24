@@ -8,7 +8,7 @@ public class ConnectionService
     public ConnectionService(HttpClient httpClient)
     {
         _httpClient = httpClient;
-    }
+    }   
     public async Task<string> GetApiResponse()
     {
         
