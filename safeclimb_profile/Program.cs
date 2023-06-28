@@ -34,18 +34,18 @@ builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
-        Title = "Mecanillama API",
-        Description = "Mecanillama RESTful API",
-        TermsOfService = new Uri("https://mecanillama.github.io/Landing-Page/"),
+        Title = "Profile Context - SafeClimb API",
+        Description = "Profile Context - RESTful API",
+        TermsOfService = new Uri("https://outsidersstartup.github.io/Go2Climb-Landing-Page/"),
         Contact = new OpenApiContact
         {
-            Name = "Mecanillama.studio",
-            Url = new Uri("https://mecanillama.github.io/Landing-Page/")
+            Name = "Safeclimb.studio",
+            Url = new Uri("https://outsidersstartup.github.io/Go2Climb-Landing-Page/")
         },
         License = new OpenApiLicense
         {
-            Name = "Mecanillama Resources License",
-            Url = new Uri("https://mecanillama.github.io/Landing-Page/")
+            Name = "Safeclimb Resources License",
+            Url = new Uri("https://outsidersstartup.github.io/Go2Climb-Landing-Page/")
         }
     });
     options.EnableAnnotations();
@@ -95,7 +95,7 @@ using (var context = scope.ServiceProvider.GetService<AppDbContext>())
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI(options =>
